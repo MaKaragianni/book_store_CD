@@ -1,0 +1,78 @@
+from lib.database_connection import DatabaseConnection
+from playwright.sync_api import Page, expect
+
+def test_has_title(page: Page):
+    page.goto("http://127.0.0.1:5001")
+
+    h1 = page.locator("h1")
+
+    expect(h1).to_have_text("Welcome to AceReads!")
+
+def test_books_page_has_heading(page: Page):
+    page.goto("http://127.0.0.1:5001/books")
+
+    h1 = page.locator("h1")
+
+    expect(h1).to_have_text("Our Books")
+
+def test_book_list_contains_all_books(page: Page):
+    DatabaseConnection.connect()
+    DatabaseConnection.seed("./seeds/books.sql")
+
+    page.goto("http://127.0.0.1:5001/books")
+
+    books = page.locator('.book-card')
+
+    expected_books = [
+      'The Gruffalo\n\nJulia Donaldson',
+      'Ada Twist, Scientist\n\nAndrea Beaty',
+      'The Girl Who Drank the Moon\n\nKelly Barnhill',
+      'Dragons in a Bag\n\nZetta Elliott'
+    ]
+
+    actual_books = books.all_inner_texts()
+
+    assert actual_books == expected_books
+
+def test_films_list_contains_all_films(page: Page):
+    DatabaseConnection.connect()
+    DatabaseConnection.seed("./seeds/films.sql")
+
+    page.goto("http://127.0.0.1:5001/films")
+
+    h1 = page.locator("h1")
+
+    expect(h1).to_have_text("Our Films")
+
+    films = page.locator('.film-card')
+
+    expected_films = [
+      'Mortal Kombat II\n\nSimon McQuoid',
+      'The Devil Wears Prada 2\n\nDavid Frankel',
+      'Oppenheimer\n\nChristopher Nolan',
+      'Project Hail Mary\n\nPhil Lord'
+    ]
+
+    actual_films = films.all_inner_texts()
+
+    assert actual_films == expected_films
+
+def test_can_create_a_new_book(page: Page):
+    DatabaseConnection.connect()
+    DatabaseConnection.seed("./seeds/books.sql")
+
+    page.goto("http://127.0.0.1:5001/books")
+
+    page.get_by_placeholder("Title").fill(
+        "The Chronicles of Geronimo (the cat)") # grab and fill each field
+    page.get_by_placeholder("Author").fill("Geronimo")
+
+    page.get_by_role("button", name="Submit").click()
+
+    expect(page.locator("body")).to_contain_text(
+    "The Chronicles of Geronimo (the cat)"
+    )
+
+    expect(page.locator("body")).to_contain_text(
+    "Geronimo"
+    )

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.css">
+    <style>
+    .film-grid{
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+    }
+
+    .film-card{
+        border: 1px solid #c618bb;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .thumbnail{
+        width: 100%;
+        height: 150px;
+        background-color: #12399c;
+        margin-bottom: 10px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Our Films</h1>
+
+<div class="film-grid">
+    {% for film in films %}
+        <div class="film-card">
+            <div class="thumbnail"></div>
+            <h3>{{ film.title }}</h3>
+            <p>{{ film.director }}</p>
+        </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>

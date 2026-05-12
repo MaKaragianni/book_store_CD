@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+book_store_venv/
+
+# Pytest
+.pytest_cache/
+
+# OS files
+.DS_Store
+
+# Environment variables
+.env
