@@ -1,13 +1,15 @@
 from flask import Flask, render_template, request, redirect
+from dotenv import load_dotenv
+
 from lib.database_connection import DatabaseConnection
 from lib.book_repository import BookRepository
 from lib.film_repository import FilmRepository
 from lib.book import Book
+from lib.film import Film
+
+load_dotenv()
 
 app = Flask(__name__)
-
-DatabaseConnection.connect()
-
 
 @app.route('/hello', methods=['GET'])
 def hello():
@@ -23,23 +25,27 @@ def index():
 
 @app.route('/books', methods=['GET'])
 def get_books():
-    connection = DatabaseConnection.get_connection()
 
+    DatabaseConnection.connect()
+
+    connection = DatabaseConnection.get_connection()
     repository = BookRepository(connection)
 
     books = repository.all()
-    
+
     return render_template("books.html", books=books)
 
 
 @app.route('/films', methods=['GET'])
 def get_films():
-    connection = DatabaseConnection.get_connection()
 
+    DatabaseConnection.connect()
+
+    connection = DatabaseConnection.get_connection()
     repository = FilmRepository(connection)
 
     films = repository.all()
-    
+
     return render_template("films.html", films=films)
 
 
@@ -52,7 +58,7 @@ def get_authors():
         {"name": "Zetta Elliott", "dob": "1979-11-11"},
         {"name": "J.K. Rowling", "dob": "1965-07-31"}
     ]
-    
+
     return render_template("authors.html", authors=authors)
 
 
@@ -92,18 +98,38 @@ def api_books():
 
 @app.route('/books', methods=['POST'])
 def create_book():
-    connection = DatabaseConnection.get_connection()
 
+    DatabaseConnection.connect()
+
+    connection = DatabaseConnection.get_connection()
     repository = BookRepository(connection)
 
-    title = request.form["title"]
-    author = request.form["author"]
+    title = request.form["title"].strip()
+    author = request.form["author"].strip()
 
     book = Book(None, title, author)
 
     repository.create(book)
 
     return redirect("/books")
+
+
+@app.route('/films', methods=['POST'])
+def create_film():
+
+    DatabaseConnection.connect()
+
+    connection = DatabaseConnection.get_connection()
+    repository = FilmRepository(connection)
+
+    title = request.form["title"].strip()
+    director = request.form["director"].strip()
+
+    film = Film(None, title, director)
+
+    repository.create(film)
+
+    return redirect("/films")
 
 
 if __name__ == "__main__":

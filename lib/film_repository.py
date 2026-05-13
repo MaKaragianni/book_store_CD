@@ -28,3 +28,5 @@ class FilmRepository:
             "INSERT INTO films (title, director) VALUES (%s, %s)",
             [film.title, film.director]
         )
+
+        self._connection.commit()

@@ -16,8 +16,12 @@ def test_books_page_has_heading(page: Page):
     expect(h1).to_have_text("Our Books")
 
 def test_book_list_contains_all_books(page: Page):
+
     DatabaseConnection.connect()
+
     DatabaseConnection.seed("./seeds/books.sql")
+
+    DatabaseConnection.close_connection()
 
     page.goto("http://127.0.0.1:5001/books")
 
@@ -37,6 +41,7 @@ def test_book_list_contains_all_books(page: Page):
 def test_films_list_contains_all_films(page: Page):
     DatabaseConnection.connect()
     DatabaseConnection.seed("./seeds/films.sql")
+    DatabaseConnection.close_connection()
 
     page.goto("http://127.0.0.1:5001/films")
 
@@ -60,6 +65,7 @@ def test_films_list_contains_all_films(page: Page):
 def test_can_create_a_new_book(page: Page):
     DatabaseConnection.connect()
     DatabaseConnection.seed("./seeds/books.sql")
+    DatabaseConnection.close_connection()
 
     page.goto("http://127.0.0.1:5001/books")
 
@@ -76,3 +82,19 @@ def test_can_create_a_new_book(page: Page):
     expect(page.locator("body")).to_contain_text(
     "Geronimo"
     )
+
+def test_can_create_a_new_film(page: Page):
+    DatabaseConnection.connect()
+    DatabaseConnection.seed("./seeds/films.sql")
+    DatabaseConnection.close_connection()
+
+    page.goto("http://127.0.0.1:5001/films")
+
+    page.get_by_placeholder("Title").fill("Interstellar") # grab and fill each field
+    page.get_by_placeholder("Director").fill("Christopher Nolan")
+
+    page.get_by_role("button", name="Submit").click()
+
+    expect(page.locator("body")).to_contain_text("Interstellar")
+
+    expect(page.locator("body")).to_contain_text("Christopher Nolan")

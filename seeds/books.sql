@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS books (
   author VARCHAR(255)
 );
 
-TRUNCATE TABLE books RESTART IDENTITY;
+TRUNCATE TABLE books RESTART IDENTITY CASCADE;
 
 INSERT INTO books (title, author)
 VALUES ('The Gruffalo', 'Julia Donaldson');

@@ -25,6 +25,8 @@ class BookRepository:
     
     def create(self, book): # accepts/inserts a Book object
         self._connection.execute(
-            "INSERT INTO books (title, author) VALUES (%s, %s)",
+            "INSERT INTO books (title, author) VALUES (%s, %s)", # parameterised queries (%s placeholders) separate data from SQL structure.
             [book.title, book.author]
         )
+
+        self._connection.commit()

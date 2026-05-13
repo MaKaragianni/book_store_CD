@@ -1,4 +1,9 @@
-FROM python:3.13
+FROM python:3.13-slim
+
+# Do not create .pyc bytecode cache files
+ENV PYTHONDONTWRITEBYTECODE=1 
+# Print logs/output immediately.
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 

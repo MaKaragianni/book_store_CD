@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://cdn.simplecss.org/simple.css">
+    
     <style>
     .film-grid{
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 18px;
+        margin-top: 30px;
     }
 
     .film-card{
@@ -22,12 +24,23 @@
         height: 150px;
         background-color: #12399c;
         margin-bottom: 10px;
+        border-radius: 6px;
+    }
+
+    form {
+        margin-bottom: 30px;
     }
 </style>
 </head>
 <body>
 
 <h1>Our Films</h1>
+
+<form method="POST" action="/films">
+    <input type="text" name="title" placeholder="Title" required><br>
+    <input type="text" name="director" placeholder="Director" required><br>
+    <button type="submit">Submit</button>
+</form>
 
 <div class="film-grid">
     {% for film in films %}

@@ -1,33 +1,30 @@
 import os
-from psycopg import connect
+import psycopg
 from psycopg.rows import dict_row
+from dotenv import load_dotenv
 
-DATABASE_NAME = os.getenv("DATABASE_NAME", "book_store_test")
+load_dotenv()
+
 
 class DatabaseConnection:
-    _connection = None
+    CONNECTION = None
 
-# Connection set for Docker/EC2:
-#    @classmethod
-#    def connect(cls):
-#        cls._connection = connect(
-#            "postgresql://postgres:password@book_store_db/book_store",
-#            row_factory=dict_row
-#        )
-
-# Connection set locally:
     @classmethod
     def connect(cls):
-        cls._connection = connect(
-            f"postgresql://localhost/{DATABASE_NAME}",
-            row_factory=dict_row,
-            autocommit=True
+        cls.CONNECTION = psycopg.connect(
+            host=os.getenv("DATABASE_HOST"),
+            dbname=os.getenv("DATABASE_NAME"),
+            user=os.getenv("DATABASE_USER"),
+            password=os.getenv("DATABASE_PASSWORD"),
+            port=os.getenv("DATABASE_PORT"),
+            row_factory=dict_row
         )
+
+        cls.CONNECTION.autocommit = True # Every SQL statement is saved immediately. No manual COMMIT needed.
 
     @classmethod
     def get_connection(cls):
-        return cls._connection
-    
+        return cls.CONNECTION
 
     @classmethod
     def seed(cls, sql_filename):
@@ -37,4 +34,16 @@ class DatabaseConnection:
             sql = file.read()
 
         with connection.cursor() as cursor:
-            cursor.execute(sql)
+            for statement in sql.split(";"): # process each piece one by one
+                stmt = statement.strip() # Remove whitespace
+                if stmt: # skip empty statements
+                    cursor.execute(stmt) # Each SQL statement runs separately
+            #cursor.execute(sql)
+
+        connection.commit()
+
+    @classmethod # After each seed, close the connection
+    def close_connection(cls):
+        if cls.CONNECTION:
+            cls.CONNECTION.close()
+            cls.CONNECTION = None
