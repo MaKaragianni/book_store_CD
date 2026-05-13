@@ -240,6 +240,7 @@ Example:
 - Verify UI updates
 
     page.get_by_placeholder("Title").fill("Harry Potter")
+
     page.get_by_role("button", name="Submit").click()
 
 ---
