@@ -3,12 +3,11 @@
 A full-stack Flask web application that allows users to view and create books stored in a PostgreSQL database.
 
 The project includes:
-
-End-to-end testing with Playwright
-Pytest-based integration testing
-Automatic Flask server startup during tests
-Database seeding for test isolation
-Environment-based configuration for development and testing
+- End-to-end testing with Playwright
+- Pytest-based integration testing
+- Automatic Flask server startup during tests
+- Database seeding for test isolation
+- Environment-based configuration for development and testing
 
 ---
 
@@ -52,14 +51,13 @@ This project uses two layers of testing:
 Automatic Flask Server Startup
 
 Tests use tests/conftest.py to:
-    - Start Flask in a subprocess
-    - Wait until /books endpoint is available
-    - Run all tests
-    - Shut down server after completion
+- Start Flask in a subprocess
+- Wait until /books endpoint is available
+- Run all tests
+- Shut down server after completion
 
 This ensures:
-
-    Tests always run against a real, live server
+Tests always run against a real, live server
 
 ---
 
@@ -68,18 +66,18 @@ This ensures:
 Before tests run, SQL seed files are executed to reset state.
 
 This ensures:
-    - Clean database for every test run
-    - Predictable test data
-    - No dependency between tests
+- Clean database for every test run
+- Predictable test data
+- No dependency between tests
 
 ---
 
 ## SQL Execution Behavior
 
 Seed files are executed statement-by-statement:
-    - SQL file is split using ;
-    - Each statement is executed individually
-    - Empty statements are ignored
+- SQL file is split using ;
+- Each statement is executed individually
+- Empty statements are ignored
 
 This allows safe execution of multi-query seed files.
 
@@ -197,15 +195,15 @@ VALUES ('Mortal Kombat II', 'Simon McQuoid');
 
 The app supports switching databases using environment variables:
 
-DATABASE_NAME=book_store python app.py
+    DATABASE_NAME=book_store python app.py
 
 The test suite uses a separate database:
 
-book_store_test
+    book_store_test
 
 Configured in:
 
-lib/database_connection.py
+    lib/database_connection.py
 
 ---
 
@@ -213,20 +211,20 @@ lib/database_connection.py
 
 Run all tests:
 
-pytest
+    pytest
 
 Run with verbose output:
 
-pytest -sv
+    pytest -sv
 
 
 #### Test Requirements
 
 Before running tests ensure:
-    - Flask server is NOT manually started (handled by conftest.py)
-    - book_store_test database exists
-    - Seed files are correct
-    - Environment variables are set in .env
+- Flask server is NOT manually started (handled by conftest.py)
+- book_store_test database exists
+- Seed files are correct
+- Environment variables are set in .env
 
 
 ---
@@ -236,13 +234,13 @@ Before running tests ensure:
 Tests simulate real user behaviour:
 
 Example:
-Navigate to /books
-Fill form fields
-Submit form
-Verify UI updates
+- Navigate to /books
+- Fill form fields
+- Submit form
+- Verify UI updates
 
-page.get_by_placeholder("Title").fill("Harry Potter")
-page.get_by_role("button", name="Submit").click()
+    page.get_by_placeholder("Title").fill("Harry Potter")
+    page.get_by_role("button", name="Submit").click()
 
 ---
 
@@ -250,11 +248,11 @@ page.get_by_role("button", name="Submit").click()
 
 Start server:
 
-python app.py
+    python app.py
 
 Then visit:
 
-http://127.0.0.1:5001/
+    http://127.0.0.1:5001/
 
 
 ---
@@ -263,50 +261,49 @@ http://127.0.0.1:5001/
 
 Build image:
 
-docker build -t book-store-app .
+    docker build -t book-store-app .
 
 Run container:
 
-docker run -p 5001:5001 book-store-app
+    docker run -p 5001:5001 book-store-app
 
 ---
 
 ### requirements.txt
 
 Key dependencies:
-
-Flask
-psycopg
-pytest
-playwright
-requests
+- Flask
+- psycopg
+- pytest
+- playwright
+- requests
 
 (Full list included in repo)
 
 ---
 
 ## Key Learning Outcomes:
-Flask routing (GET + POST)
-HTML form handling
-Jinja templating
-PostgreSQL CRUD operations
-Repository pattern (clean architecture)
-Test-driven development (TDD)
-End-to-end testing with Playwright
-Database seeding for test isolation
-Subprocess-based test servers
-Environment-based configuration
-Docker containerisation
-Pytest fixtures and automated test infrastructure
+- Flask routing (GET + POST)
+- HTML form handling
+- Jinja templating
+- PostgreSQL CRUD operations
+- Repository pattern (clean architecture)
+- Test-driven development (TDD)
+- End-to-end testing with Playwright
+- Database seeding for test isolation
+- Subprocess-based test servers
+- Environment-based configuration
+- Docker containerisation
+- Pytest fixtures and automated test infrastructure
 
 ---
 
 ## Test Strategy:
-Integration tests → real Flask server + PostgreSQL database
-UI tests → real browser automation
-Test DB is fully reset via seed files
-Full browser tests with Playwright
-Independent test database (book_store_test)
-Server lifecycle managed via conftest.py
+- Integration tests → real Flask server + PostgreSQL database
+- UI tests → real browser automation
+- Test DB is fully reset via seed files
+- Full browser tests with Playwright
+- Independent test database (book_store_test)
+- Server lifecycle managed via conftest.py
 
 Built as part of a full-stack Python training project using Flask, PostgreSQL, and Playwright testing.
