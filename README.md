@@ -277,9 +277,13 @@ Example:
 - User signup flow (/users/new → /books)
 
     page.get_by_placeholder("Title").fill("Harry Potter")
+    
     page.get_by_role("button", name="Submit").click()
+    
     page.get_by_placeholder("username").fill("newuser")
+    
     page.get_by_placeholder("password").fill("pass123")
+    
     page.get_by_role("button", name="Sign Up").click()
 
 ---
