@@ -104,3 +104,49 @@ def test_create_user_inserts_into_database():
     assert result is not None
     assert result["username"] == "dbuser"
     assert result["password"] == "dbpass123"
+
+# SESSIONS & AUTHENTICATION TESTS
+def test_get_login_form_returns_200():
+    client = app.test_client()
+    response = client.get("/sessions/new")
+    assert response.status_code == 200
+
+
+def test_login_successful_redirects_and_sets_session():
+    from lib.database_connection import DatabaseConnection
+    DatabaseConnection.connect()
+    connection = DatabaseConnection.get_connection()
+    connection.execute(
+        "INSERT INTO users (username, password) VALUES (%s, %s);", 
+        ["mario", "superpassword"]
+    )
+
+    client = app.test_client()
+    
+    # Submit the form values to /sessions
+    response = client.post("/sessions", data={
+        "username": "mario",
+        "password": "superpassword"
+    })
+
+    # Assert it handles the successful routing
+    assert response.status_code == 302
+    assert response.location.endswith("/books")
+
+    # Check that the session dictionary correctly populated the user information
+    with client.session_transaction() as sess:
+        assert sess["username"] == "mario"
+        assert sess["user_id"] is not None
+
+
+def test_login_failed_redirects_back_to_login_form():
+    client = app.test_client()
+    
+    # Try logging in with a user profile that doesn't exist
+    response = client.post("/sessions", data={
+        "username": "im_not_real",
+        "password": "wrong_password"
+    })
+
+    assert response.status_code == 302
+    assert response.location.endswith("/sessions/new")

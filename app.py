@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from dotenv import load_dotenv
 
 from lib.database_connection import DatabaseConnection
@@ -13,6 +13,7 @@ from lib.user import User
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = "some_really_secret_key"
 
 @app.route('/hello', methods=['GET'])
 def hello():
@@ -74,6 +75,36 @@ def get_quotes():
 def get_team():
     team = ["Dorothy", "Rose", "Blanche", "Sophia"]
     return render_template("team.html", team=team)
+
+
+# Login Form
+@app.route('/sessions/new', methods=['GET'])
+def get_login_form():
+    return render_template("login_form.html")
+
+
+@app.route('/sessions', methods=['POST'])
+def create_session():
+    DatabaseConnection.connect()
+    connection = DatabaseConnection.get_connection()
+    user_repository = UserRepository(connection)
+
+    # Grab the data the user typed into the form inputs
+    username = request.form["username"]
+    password = request.form["password"]
+
+    # Search for the user in the database
+    user = user_repository.find_by_username(username)
+
+    # Verify if the user exists AND the plain-text passwords match
+    if user and user.password == password:
+        # Success! Save data into Flask's session dictionary
+        session["user_id"] = user.id
+        session["username"] = user.username
+        return redirect("/books")
+    else:
+        # Failure! Send them back to the login page to try again
+        return redirect("/sessions/new")
 
 
 # API ROUTES
@@ -160,3 +191,4 @@ def create_user():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)
+    

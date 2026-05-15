@@ -113,3 +113,23 @@ def test_can_sign_up_new_user(page: Page):
 
     # confirm page still works after signup
     expect(page.locator("h1")).to_have_text("Our Books")
+
+
+def test_can_log_in_existing_user(page: Page):
+    DatabaseConnection.connect()
+    connection = DatabaseConnection.get_connection()
+    connection.execute(
+        "INSERT INTO users (username, password) VALUES (%s, %s);", 
+        ["auth_user", "mypass123"]
+    )
+    DatabaseConnection.close_connection()
+
+    page.goto("http://127.0.0.1:5001/sessions/new")
+
+    page.locator("#username").fill("auth_user")
+    page.locator("#password").fill("mypass123")
+
+    page.get_by_role("button", name="Log In").click()
+
+    expect(page).to_have_url("http://127.0.0.1:5001/books")
+    expect(page.locator("h1")).to_have_text("Our Books")
