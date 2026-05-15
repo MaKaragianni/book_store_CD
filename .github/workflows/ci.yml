@@ -1,6 +1,11 @@
 name: Continuous Integration
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_call: # This allows deploy.yml to link directly to this workflow
 
 jobs:
   test:

@@ -1,7 +1,10 @@
 name: Deploy to EC2
 
 on: # on defines what triggers the workflow. Here, it's any push to the main branch
-  push:
+  workflow_run:
+    workflows: ["Continuous Integration"]
+    types:
+      - completed
     branches: [ main ]
 
 # GitHub Actions runners are upgrading their underlying system to run on Node.js 24,
@@ -19,6 +22,8 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment: prod
+    # This ensures that if the CI workflow failed, this deployment cancels itself immediately
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
 # steps are the individual tasks that run in sequence.
 # Each step either runs a shell command directly using run,
