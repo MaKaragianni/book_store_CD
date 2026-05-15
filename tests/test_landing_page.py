@@ -98,3 +98,18 @@ def test_can_create_a_new_film(page: Page):
     expect(page.locator("body")).to_contain_text("Interstellar")
 
     expect(page.locator("body")).to_contain_text("Christopher Nolan")
+
+
+def test_can_sign_up_new_user(page: Page):
+    page.goto("http://127.0.0.1:5001/users/new")
+
+    page.get_by_placeholder("username").fill("newuser123")
+    page.get_by_placeholder("password").fill("securepass")
+
+    page.get_by_role("button", name="Sign Up").click()
+
+    # should redirect to books page
+    expect(page).to_have_url("http://127.0.0.1:5001/books")
+
+    # confirm page still works after signup
+    expect(page.locator("h1")).to_have_text("Our Books")

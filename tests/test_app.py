@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from app import app
 
+
 # BOOKS API TESTS
 # a descriptive test name
 def test_get_books_returns_a_200():
@@ -50,7 +51,7 @@ def test_get_authors_returns_all_authors():
         {"name": "J.K. Rowling", "dob": "1965-07-31"}
     ]
 
-# Quotes static page TESTS
+# Quotes TESTS
 def test_get_quotes_returns_200():
     client = app.test_client()
     response = client.get("/quotes")
@@ -60,3 +61,46 @@ def test_get_quotes_contains_quotes():
     client = app.test_client()
     response = client.get("/quotes")
     assert b"Books" in response.data
+
+
+# USERS API TESTS
+def test_get_signup_form_returns_200():
+    client = app.test_client()
+    response = client.get("/users/new")
+
+    assert response.status_code == 200
+
+
+def test_create_user_returns_redirect():
+    client = app.test_client()
+
+    response = client.post("/users", data={
+        "username": "testuser",
+        "password": "testpass123"
+    })
+
+    assert response.status_code == 302 #Redirect
+    assert response.location.endswith("/books")
+
+
+def test_create_user_inserts_into_database():
+    from lib.database_connection import DatabaseConnection
+
+    DatabaseConnection.connect()
+    connection = DatabaseConnection.get_connection()
+
+    client = app.test_client()
+
+    client.post("/users", data={
+        "username": "dbuser",
+        "password": "dbpass123"
+    })
+
+    result = connection.execute(
+        "SELECT username, password FROM users WHERE username = %s",
+        ["dbuser"]
+    ).fetchone()
+
+    assert result is not None
+    assert result["username"] == "dbuser"
+    assert result["password"] == "dbpass123"

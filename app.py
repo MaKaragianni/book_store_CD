@@ -4,8 +4,11 @@ from dotenv import load_dotenv
 from lib.database_connection import DatabaseConnection
 from lib.book_repository import BookRepository
 from lib.film_repository import FilmRepository
+from lib.user_repository import UserRepository
 from lib.book import Book
 from lib.film import Film
+from lib.user import User
+
 
 load_dotenv()
 
@@ -130,6 +133,29 @@ def create_film():
     repository.create(film)
 
     return redirect("/films")
+
+
+@app.route('/users/new', methods=['GET']) # Displays page/form
+def get_signup_form():
+    return render_template("signup_form.html")
+
+
+@app.route('/users', methods=['POST']) # Processes submitted data
+def create_user():
+
+    DatabaseConnection.connect()
+
+    connection = DatabaseConnection.get_connection()
+    repository = UserRepository(connection)
+
+    username = request.form['username'].strip() # Gets submitted form data
+    password = request.form['password'].strip()
+
+    user = User(username, password) # Creates a Python object
+
+    repository.create(user)
+
+    return redirect('/books')
 
 
 if __name__ == "__main__":

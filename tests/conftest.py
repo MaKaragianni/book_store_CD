@@ -39,3 +39,21 @@ def flask_server(): # starting web server before tests begin
 
     process.terminate() # stop Flask server
     process.wait() # wait until it fully shuts down
+
+
+# DATABASE CLEANUP FIXTURE
+@pytest.fixture(autouse=True)
+def clean_users_table():
+    """
+    Runs before EVERY test automatically.
+    Keeps users table empty so tests don't conflict.
+    """
+
+    from lib.database_connection import DatabaseConnection
+
+    DatabaseConnection.connect()
+    connection = DatabaseConnection.get_connection()
+
+    connection.execute("TRUNCATE TABLE users RESTART IDENTITY;") # wipes table, resets ID
+
+    yield # pauses till all tests finish
