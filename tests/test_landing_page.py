@@ -65,32 +65,43 @@ def test_films_list_contains_all_films(page: Page):
 def test_can_create_a_new_book(page: Page):
     DatabaseConnection.connect()
     DatabaseConnection.seed("./seeds/books.sql")
+    connection = DatabaseConnection.get_connection()
+    connection.execute("INSERT INTO users (username, password) VALUES (%s, %s);", ["test", "1234"])
     DatabaseConnection.close_connection()
 
+    # Go to the login page first and authenticate
+    page.goto("http://127.0.0.1:5001/sessions/new")
+    page.locator("#username").fill("test")
+    page.locator("#password").fill("1234")
+    page.get_by_role("button", name="Log In").click()
+
+    # Now that Playwright has the session cookie, proceed to create the book
     page.goto("http://127.0.0.1:5001/books")
 
-    page.get_by_placeholder("Title").fill(
-        "The Chronicles of Geronimo (the cat)") # grab and fill each field
+    page.get_by_placeholder("Title").fill("The Chronicles of Geronimo (the cat)")
     page.get_by_placeholder("Author").fill("Geronimo")
 
     page.get_by_role("button", name="Submit").click()
 
-    expect(page.locator("body")).to_contain_text(
-    "The Chronicles of Geronimo (the cat)"
-    )
+    expect(page.locator("body")).to_contain_text("The Chronicles of Geronimo (the cat)")
 
-    expect(page.locator("body")).to_contain_text(
-    "Geronimo"
-    )
+    expect(page.locator("body")).to_contain_text("Geronimo")
 
 def test_can_create_a_new_film(page: Page):
     DatabaseConnection.connect()
     DatabaseConnection.seed("./seeds/films.sql")
+    connection = DatabaseConnection.get_connection()
+    connection.execute("INSERT INTO users (username, password) VALUES (%s, %s);", ["test", "1234"])
     DatabaseConnection.close_connection()
+
+    page.goto("http://127.0.0.1:5001/sessions/new")
+    page.locator("#username").fill("test")
+    page.locator("#password").fill("1234")
+    page.get_by_role("button", name="Log In").click()
 
     page.goto("http://127.0.0.1:5001/films")
 
-    page.get_by_placeholder("Title").fill("Interstellar") # grab and fill each field
+    page.get_by_placeholder("Title").fill("Interstellar")
     page.get_by_placeholder("Director").fill("Christopher Nolan")
 
     page.get_by_role("button", name="Submit").click()

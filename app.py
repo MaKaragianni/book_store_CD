@@ -8,6 +8,7 @@ from lib.user_repository import UserRepository
 from lib.book import Book
 from lib.film import Film
 from lib.user import User
+from lib.login_required import login_required
 
 
 load_dotenv()
@@ -131,6 +132,7 @@ def api_books():
 
 
 @app.route('/books', methods=['POST'])
+@login_required # Protects book creation
 def create_book():
 
     DatabaseConnection.connect()
@@ -149,6 +151,7 @@ def create_book():
 
 
 @app.route('/films', methods=['POST'])
+@login_required # Protects film creation
 def create_film():
 
     DatabaseConnection.connect()
