@@ -14,7 +14,10 @@ def flask_server(): # starting web server before tests begin
         env={ # running in testing mode, keeping all normal system variables
             **os.environ,
             "FLASK_ENV": "test",
-            "FLASK_APP": "app.py"
+            "FLASK_APP": "app.py", # 👈 Fixed! Added the missing comma here
+            "DATABASE_NAME": "book_store_test",
+            "DB_USER": "runner",
+            "DB_HOST": "127.0.0.1"
         },
         stdout=subprocess.PIPE, # Capturing output, without printing Flask logs into terminal
         stderr=subprocess.PIPE
@@ -27,7 +30,7 @@ def flask_server(): # starting web server before tests begin
     for _ in range(30):
         try:
             r = requests.get("http://127.0.0.1:5001/books")
-            if r.status_code == 200:
+            if r.status_code == 200 or r.status_code == 302:
                 break
         except Exception:
             time.sleep(0.5)
