@@ -8,6 +8,8 @@ The project includes:
 - Automatic Flask server startup during tests
 - Database seeding for test isolation
 - Environment-based configuration for development and testing
+- Session-based user authentication and secure routing protection
+- Automated Continuous Integration and Continuous Deployment (CI/CD) pipeline via GitHub Actions
 
 ---
 
@@ -15,12 +17,12 @@ The project includes:
 
 ### Books
 - View all books stored in PostgreSQL
-- Add new books via HTML form
+- Add new books via HTML form (Requires active login session)
 - Books rendered using Flask + Jinja templates
 
 ### Films
 - View list of films and directors
-- Add new films via HTML form
+- Add new films via HTML form (Requires active login session)
 - Film data stored in PostgreSQL database
 
 ### Authors Page
@@ -34,8 +36,11 @@ The project includes:
 - Simple team page using Jinja loops
 
 ### Users
-- User registration system
+- User registration system (/users/new)
 - Sign up form with username and password
+- Secure login system (/sessions/new) storing session data securely in client-side cookies
+- Custom reusable `@login_required` decorator pattern built using Python's `functools.wraps`
+- Cryptographic session signing enforced via a server-side `app.secret_key`
 - User data stored in PostgreSQL database
 - Input validation in User model (empty fields, length constraints)
 - Test-safe database insertion with isolated test cleanup
@@ -47,12 +52,14 @@ This project uses two layers of testing:
 
 1. Integration + API Tests (pytest)
     - Flask server is automatically started using conftest.py
-    - Tests send real HTTP requests to http://127.0.0.1:5001
+    - Tests send real HTTP requests to http://127.0.0.1:5001 using the Flask test client
+    - Session tracking, authentication checks and redirection flows are fully validated
     - Database is seeded and cleaned before tests run
 
 2. End-to-End UI Tests (Playwright)
     - Simulates real user interaction in browser
     - Tests pages, forms, and UI updates, including user signup flow
+    - Tests authenticated state routing behaviors by dynamically pre-populating users and interacting with the authentication forms
 
 ---
 
@@ -101,6 +108,15 @@ This allows safe execution of multi-query seed files.
 
 ---
 
+## Deployment & CI/CD Pipeline
+
+The project features a fully automated production pipeline split into two connected safeguards:
+
+1. **Continuous Integration (CI)**: Configured in `.github/workflows/ci.yml`. On every push or pull request, GitHub spins up a clean Ubuntu runner, instantiates a live PostgreSQL database service container, builds your Python environment, sets up your browser automation runtime via Playwright, and executes `pytest`.
+2. **Continuous Deployment (CD)**: Configured in `.github/workflows/deploy.yml`. It is chained directly to the completion of the CI workflow. If any tests fail during the CI phase, the deployment job is automatically skipped, keeping the live server safe. If tests pass, the pipeline securely logs into your Amazon Web Services (AWS) EC2 production instance via SSH, updates the repository files, builds a clean Docker image layer, kills the outdated application container, and hot-swaps to the running app.
+
+---
+
 ## Tech Stack
 
 - Python 3.13
@@ -110,7 +126,9 @@ This allows safe execution of multi-query seed files.
 - Jinja2 templates
 - Playwright (browser testing)
 - Pytest
-- Docker (optional)
+- Docker
+- GitHub Actions (CI/CD Pipelines)
+- Amazon Web Services (AWS) EC2
 - HTML/CSS (SimpleCSS CDN)
 
 ---
@@ -119,8 +137,18 @@ This allows safe execution of multi-query seed files.
 
 book_store/
 │
+├── .github/
+│   ├── workflows/
+│     ├── ci.yml
+│     ├── deploy.yml
+│
 ├── app.py
+│
+├── static/
+│   ├── styles.css
+│
 ├── lib/
+│   ├── login_required.py
 │   ├── database_connection.py
 │   ├── book_repository.py
 │   ├── film_repository.py
@@ -137,6 +165,7 @@ book_store/
 │   ├── quotes.html
 │   ├── team.html
 │   ├── signup_form.html
+│   ├── login_form.html
 │
 ├── seeds/
 │   └── books.sql
@@ -146,6 +175,7 @@ book_store/
 ├── tests/
 │   ├── conftest.py
 │   ├── test_app.py
+│   ├── test_auth.py
 │   ├── test_landing_page.py
 │
 ├── book_store_venv/ (Not included on GitHub project)
@@ -270,15 +300,13 @@ Before running tests ensure:
 Tests simulate real user behaviour:
 
 Example:
+- Navigate to /sessions/new
+- Log in using seeded credentials
 - Navigate to /books
 - Fill form fields
 - Submit form
 - Verify UI updates
 - User signup flow (/users/new → /books)
-
-    page.get_by_placeholder("Title").fill("Harry Potter")
-    
-    page.get_by_role("button", name="Submit").click()
     
     page.get_by_placeholder("username").fill("newuser")
     
@@ -301,7 +329,7 @@ Then visit:
 
 ---
 
-## Docker Setup (optional)
+## Docker Setup
 
 Build image:
 
@@ -317,6 +345,7 @@ Run container:
 
 Key dependencies:
 - Flask
+- python-dotenv
 - psycopg
 - pytest
 - playwright
@@ -339,7 +368,10 @@ Key dependencies:
 - Environment-based configuration
 - Docker containerisation
 - Pytest fixtures and automated test infrastructure
-- User authentication foundations (basic signup system)
+- User authentication foundations (Signup systems, session mechanics, cookie handling)
+- User authorisation guardrails (Custom function decorators and state validation)
+- Continuous Integration (Automated testing machines inside GitHub environments)
+- Continuous Deployment (Production rollouts directly chained to live server health checks)
 
 ---
 
