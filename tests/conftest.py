@@ -10,17 +10,18 @@ import requests
 # "autouse=True" no need to call this fixture in tests, pytest runs it automatically
 def flask_server(): # starting web server before tests begin
     process = subprocess.Popen(
-        ["flask", "run", "--no-reload", "--port=5001"],
+        ["python", "-m", "flask", "run", "--no-reload", "--port=5001"],
         env={ # running in testing mode, keeping all normal system variables
             **os.environ,
+            "FLASK_APP": "app.py",
             "FLASK_ENV": "test",
-            "FLASK_APP": "app.py", # 👈 Fixed! Added the missing comma here
             "DATABASE_NAME": "book_store_test",
             "DB_USER": "runner",
             "DB_HOST": "127.0.0.1"
         },
         stdout=subprocess.PIPE, # Capturing output, without printing Flask logs into terminal
-        stderr=subprocess.PIPE
+        stderr=subprocess.PIPE,
+        text=True
     )
 
     # wait for server to be ready
@@ -30,13 +31,36 @@ def flask_server(): # starting web server before tests begin
     for _ in range(30):
         try:
             r = requests.get("http://127.0.0.1:5001/books")
-            if r.status_code == 200 or r.status_code == 302:
+            if r.status_code in [200, 302]:
                 break
         except Exception:
-            time.sleep(0.5)
+            pass
+
+        if process.poll() is not None:
+            stdout, stderr = process.communicate()
+
+            print("FLASK STDOUT:")
+            print(stdout)
+
+            print("FLASK STDERR:")
+            print(stderr)
+
+            raise Exception("Flask crashed during startup")
+
+        time.sleep(0.5)
+
     else:
         process.terminate()
-        raise Exception("Flask did not start") # if server still not ready, terminate so we don't wait forever
+
+        stdout, stderr = process.communicate()
+
+        print("FLASK STDOUT:")
+        print(stdout)
+
+        print("FLASK STDERR:")
+        print(stderr)
+
+        raise Exception("Flask did not start")
 
     yield # splits function into 2 phases: before yield (start server) and after yield (teardown/cleanup)
 
@@ -57,6 +81,7 @@ def clean_users_table():
     DatabaseConnection.connect()
     connection = DatabaseConnection.get_connection()
 
-    connection.execute("TRUNCATE TABLE users RESTART IDENTITY;") # wipes table, resets ID
+    connection.execute("TRUNCATE TABLE users RESTART IDENTITY CASCADE;") # wipes table, resets ID
+    connection.commit()
 
     yield # pauses till all tests finish
