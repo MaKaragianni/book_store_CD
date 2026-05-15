@@ -1,6 +1,6 @@
 # AceBooks - Book Store App
 
-A full-stack Flask web application that allows users to view and create books stored in a PostgreSQL database.
+A full-stack Flask web application that allows users to view and create books, films and users stored in a PostgreSQL database.
 
 The project includes:
 - End-to-end testing with Playwright
@@ -33,17 +33,26 @@ The project includes:
 ### Team Page
 - Simple team page using Jinja loops
 
+### Users
+- User registration system
+- Sign up form with username and password
+- User data stored in PostgreSQL database
+- Input validation in User model (empty fields, length constraints)
+- Test-safe database insertion with isolated test cleanup
+
+---
+
 ## Testing Strategy
 This project uses two layers of testing:
 
 1. Integration + API Tests (pytest)
     - Flask server is automatically started using conftest.py
     - Tests send real HTTP requests to http://127.0.0.1:5001
-    - Database is seeded before tests run
+    - Database is seeded and cleaned before tests run
 
 2. End-to-End UI Tests (Playwright)
     - Simulates real user interaction in browser
-    - Tests pages, forms, and UI updates
+    - Tests pages, forms, and UI updates, including user signup flow
 
 ---
 
@@ -58,6 +67,15 @@ Tests use tests/conftest.py to:
 
 This ensures:
 Tests always run against a real, live server
+
+---
+
+### Database Isolation
+
+Before each test run:
+- Users table is truncated automatically using pytest fixtures
+- Books and films are seeded using SQL seed files
+- Ensures no test dependencies or leftover data
 
 ---
 
@@ -106,8 +124,10 @@ book_store/
 │   ├── database_connection.py
 │   ├── book_repository.py
 │   ├── film_repository.py
+│   ├── user_repository.py
 │   ├── book.py
 │   ├── film.py
+│   ├── user.py
 │
 ├── templates/
 │   ├── books.html
@@ -116,10 +136,12 @@ book_store/
 │   ├── authors.html
 │   ├── quotes.html
 │   ├── team.html
+│   ├── signup_form.html
 │
 ├── seeds/
 │   └── books.sql
 │   └── films.sql
+│   └── users.sql
 │
 ├── tests/
 │   ├── conftest.py
@@ -165,6 +187,16 @@ CREATE TABLE films (
 );
 ```
 
+Users
+
+```sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+```
+
 #### Database Seeding
 
 The database is reset before tests using SQL seed files.
@@ -190,6 +222,11 @@ TRUNCATE TABLE films RESTART IDENTITY CASCADE;
 INSERT INTO films (title, director)
 VALUES ('Mortal Kombat II', 'Simon McQuoid');
 ```
+
+users.sql
+- Used for manual development seeding only
+- Not required for test isolation (handled by pytest fixture)
+
 
 #### Environment Configuration
 
@@ -226,7 +263,6 @@ Before running tests ensure:
 - Seed files are correct
 - Environment variables are set in .env
 
-
 ---
 
 ## Playwright Testing
@@ -238,10 +274,13 @@ Example:
 - Fill form fields
 - Submit form
 - Verify UI updates
+- User signup flow (/users/new → /books)
 
     page.get_by_placeholder("Title").fill("Harry Potter")
-
     page.get_by_role("button", name="Submit").click()
+    page.get_by_placeholder("username").fill("newuser")
+    page.get_by_placeholder("password").fill("pass123")
+    page.get_by_role("button", name="Sign Up").click()
 
 ---
 
@@ -296,15 +335,17 @@ Key dependencies:
 - Environment-based configuration
 - Docker containerisation
 - Pytest fixtures and automated test infrastructure
+- User authentication foundations (basic signup system)
 
 ---
 
 ## Test Strategy:
 - Integration tests → real Flask server + PostgreSQL database
 - UI tests → real browser automation
-- Test DB is fully reset via seed files
+- Test DB is fully reset via pytest fixtures
 - Full browser tests with Playwright
 - Independent test database (book_store_test)
 - Server lifecycle managed via conftest.py
+
 
 Built as part of a full-stack Python training project using Flask, PostgreSQL, and Playwright testing.
