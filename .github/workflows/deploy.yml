@@ -10,13 +10,6 @@ on: # on defines what triggers the workflow. Here, it's any push to the main bra
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    environment: prod
-    steps:
-      - name: Check out
-        uses: actions/checkout@v4
 
 # jobs is where you define the work to be done. Each job has a name
 # (build-and-deploy, in this case) and runs on a fresh virtual machine
