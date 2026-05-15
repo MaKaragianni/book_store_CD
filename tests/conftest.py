@@ -16,8 +16,9 @@ def flask_server(): # starting web server before tests begin
             "FLASK_APP": "app.py",
             "FLASK_ENV": "test",
             "DATABASE_NAME": "book_store_test",
-            "DB_USER": "runner",
-            "DB_HOST": "127.0.0.1"
+            "DATABASE_USER": "runner",
+            "DATABASE_HOST": "127.0.0.1",
+            "DATABASE_PORT": "5432"
         },
         stdout=subprocess.PIPE, # Capturing output, without printing Flask logs into terminal
         stderr=subprocess.PIPE,
