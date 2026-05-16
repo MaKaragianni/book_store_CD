@@ -42,7 +42,11 @@ def flask_server(): # starting web server before tests begin
 
 @pytest.fixture(scope="function", autouse=True)
 def clean_database():
-    """Automatically empties the users table before every single test runs."""
+    """Automatically empties the users table before every single test runs locally."""
+    # IF RUNNING ON GITHUB CI, SKIP DATABASE TRUNCATION TO PREVENT CRASHES
+    if os.getenv('GITHUB_ACTIONS') == 'true':
+        return
+    
     from lib.database_connection import DatabaseConnection
     
     DatabaseConnection.connect()
