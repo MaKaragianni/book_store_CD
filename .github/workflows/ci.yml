@@ -54,5 +54,11 @@ jobs:
         run: nohup python app.py > app.log 2>&1 &
 
       - name: Run tests
+        env:
+          DATABASE_HOST: 127.0.0.1
+          DATABASE_NAME: book_store_test
+          DATABASE_USER: runner
+          DATABASE_PASSWORD: ""
+          DATABASE_PORT: 5432
         run: |
           pytest
