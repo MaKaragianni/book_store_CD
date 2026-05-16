@@ -26,7 +26,7 @@ def flask_server(): # starting web server before tests begin
     # if it fails, wait 0.5 seconds and try again
     for _ in range(30):
         try:
-            r = requests.get("http://127.0.0.1:5001/books")
+            r = requests.get("http://127.0.0.1:5001/hello")
             if r.status_code == 200:
                 break
         except Exception:
