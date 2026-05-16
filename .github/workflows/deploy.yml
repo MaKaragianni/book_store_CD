@@ -7,32 +7,24 @@ on: # on defines what triggers the workflow. Here, it's any push to the main bra
       - completed
     branches: [ main ]
 
-# GitHub Actions runners are upgrading their underlying system to run on Node.js 24,
-# and they are warning developers that older actions (like actions/checkout@v4) are still built using Node.js 20.
-# Adding the below to make this future-proof.
+# GitHub Actions runners are upgrading their underlying system to run on Node.js 24.
+# Adding the below environment variable to make this workflow future-proof.
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
-
-# jobs is where you define the work to be done. Each job has a name
-# (build-and-deploy, in this case) and runs on a fresh virtual machine
-# here, the latest version of Ubuntu
-# environment tells the workflow which GitHub environment to use, giving it access to the secrets you configured
 jobs:
+  # jobs is where you define the work to be done. 
+  # It runs on a fresh virtual machine using the latest version of Ubuntu.
+  # environment tells the workflow which GitHub environment to use for secrets.
   build-and-deploy:
     runs-on: ubuntu-latest
     environment: prod
     # This ensures that if the CI workflow failed, this deployment cancels itself immediately
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
-# steps are the individual tasks that run in sequence.
-# Each step either runs a shell command directly using run,
-# or pulls in a pre-built action from the GitHub Actions marketplace using uses.
-# In this workflow, appleboy/scp-action handles copying files over SSH,
-# and appleboy/ssh-action handles running commands on your EC2 instance
-# saving you from having to write that plumbing yourself.
-# Secrets are referenced with ${{ secrets.YOUR_SECRET_NAME }} and are never exposed in the logs.
-
+    # steps are the individual tasks that run in sequence.
+    # appleboy/scp-action handles copying files over SSH.
+    # appleboy/ssh-action handles running commands on your EC2 instance.
     steps:
       - name: Check out
         uses: actions/checkout@v4

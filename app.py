@@ -10,11 +10,10 @@ from lib.film import Film
 from lib.user import User
 from lib.login_required import login_required
 
-
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "some_really_secret_key"
+app.secret_key = "some_really_secret_key" # Keeps our session cookies secure
 
 @app.route('/hello', methods=['GET'])
 def hello():
@@ -78,36 +77,6 @@ def get_team():
     return render_template("team.html", team=team)
 
 
-# Login Form
-@app.route('/sessions/new', methods=['GET'])
-def get_login_form():
-    return render_template("login_form.html")
-
-
-@app.route('/sessions', methods=['POST'])
-def create_session():
-    DatabaseConnection.connect()
-    connection = DatabaseConnection.get_connection()
-    user_repository = UserRepository(connection)
-
-    # Grab the data the user typed into the form inputs
-    username = request.form["username"]
-    password = request.form["password"]
-
-    # Search for the user in the database
-    user = user_repository.find_by_username(username)
-
-    # Verify if the user exists AND the plain-text passwords match
-    if user and user.password == password:
-        # Success! Save data into Flask's session dictionary
-        session["user_id"] = user.id
-        session["username"] = user.username
-        return redirect("/books")
-    else:
-        # Failure! Send them back to the login page to try again
-        return redirect("/sessions/new")
-
-
 # API ROUTES
 
 @app.route('/api/authors', methods=['GET'])
@@ -132,7 +101,7 @@ def api_books():
 
 
 @app.route('/books', methods=['POST'])
-@login_required # Protects book creation
+@login_required  # Protects book creation
 def create_book():
 
     DatabaseConnection.connect()
@@ -151,7 +120,7 @@ def create_book():
 
 
 @app.route('/films', methods=['POST'])
-@login_required # Protects film creation
+@login_required  # Protects film creation
 def create_film():
 
     DatabaseConnection.connect()
@@ -169,29 +138,65 @@ def create_film():
     return redirect("/films")
 
 
-@app.route('/users/new', methods=['GET']) # Displays page/form
+# Login Form
+@app.route('/sessions/new', methods=['GET'])
+def get_login_form():
+    return render_template("login_form.html")
+
+
+# Route to handle the Form Submission
+@app.route('/sessions', methods=['POST'])
+def create_session():
+    DatabaseConnection.connect()
+    connection = DatabaseConnection.get_connection()
+    user_repository = UserRepository(connection)
+
+    # Grab the data the user typed into the form inputs
+    username = request.form["username"]
+    password = request.form["password"]
+
+    # Search for the user in the database
+    user = user_repository.find_by_username(username)
+
+    # Verify if the user exists AND the plain-text passwords match
+    if user and user.password == password:
+        # Success! Save data into Flask's session dictionary
+        session["user_id"] = user.id
+        session["username"] = user.username
+        return redirect("/books")
+    else:
+        # Failure! Boot them back to the login page to try again
+        return redirect("/sessions/new")
+    
+
+# Sign-Up Form
+@app.route('/users/new', methods=['GET'])
 def get_signup_form():
     return render_template("signup_form.html")
 
 
-@app.route('/users', methods=['POST']) # Processes submitted data
+# Route to process the Sign-Up Form submission
+@app.route('/users', methods=['POST'])
 def create_user():
-
     DatabaseConnection.connect()
-
     connection = DatabaseConnection.get_connection()
-    repository = UserRepository(connection)
+    user_repository = UserRepository(connection)
 
-    username = request.form['username'].strip() # Gets submitted form data
-    password = request.form['password'].strip()
+    # Extract the data from the form
+    username = request.form["username"].strip()
+    password = request.form["password"].strip()
 
-    user = User(username, password) # Creates a Python object
+    # Simple validation check
+    if not username or not password:
+        return "Username and password cannot be empty", 400
 
-    repository.create(user)
+    # Instantiate your User entity model and save it via the repository
+    new_user = User(None, username, password)
+    user_repository.create(new_user)
 
-    return redirect('/books')
+    # After signing up, redirect them straight to the login form
+    return redirect("/sessions/new")
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)
-    

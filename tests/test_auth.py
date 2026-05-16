@@ -62,7 +62,6 @@ def test_auth_playwright_success(page: Page):
 def test_auth_playwright_failure(page: Page):
     DatabaseConnection.connect()
     connection = DatabaseConnection.get_connection()
-    connection.execute("TRUNCATE TABLE users RESTART IDENTITY;")
     connection.execute("INSERT INTO users (username, password) VALUES (%s, %s);", ["test", "1234"])
     DatabaseConnection.close_connection()
 

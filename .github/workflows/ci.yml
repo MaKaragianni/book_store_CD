@@ -5,14 +5,11 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_call:
+  workflow_call: # This allows deploy.yml to link directly to this workflow
 
+# Cleans up that GitHub runner warning
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-  # Set global defaults for the test execution context
-  DATABASE_NAME: book_store_test
-  DB_USER: runner
-  DB_HOST: 127.0.0.1
 
 jobs:
   test:
@@ -48,16 +45,14 @@ jobs:
           pip install -r requirements.txt
           playwright install
 
-      - name: Seed database schema
+      - name: Seed database
         run: |
           psql -h 127.0.0.1 -U runner book_store_test -f seeds/books.sql
-          psql -h 127.0.0.1 -U runner book_store_test -f seeds/films.sql
           psql -h 127.0.0.1 -U runner book_store_test -f seeds/users.sql
 
+      - name: Start web app
+        run: nohup python app.py > app.log 2>&1 &
+
       - name: Run tests
-        env:
-          DATABASE_NAME: book_store_test
-          DB_USER: runner
-          DB_HOST: 127.0.0.1
         run: |
           pytest

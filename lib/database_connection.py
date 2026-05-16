@@ -46,4 +46,4 @@ class DatabaseConnection:
     def close_connection(cls):
         if cls.CONNECTION:
             cls.CONNECTION.close()
-            cls.CONNECTION = None
+            cls.CONNECTION = None 
